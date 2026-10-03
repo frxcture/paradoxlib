@@ -1,0 +1,856 @@
+paradoxlibrary = {}
+
+local TweenService = game:GetService("TweenService")
+
+local function layoutholderOf(parent)
+	local main = game.CoreGui and game.CoreGui.paradox and game.CoreGui.paradox.main
+	local tabs = main and main:FindFirstChild("tabs")
+	local tab = tabs and tabs:FindFirstChild(parent)
+
+	if not tab then
+		error("paradoxlibrary: no tab named '" .. tostring(parent) .. "'", 2)
+	end
+
+	local holder = tab:FindFirstChild("layoutholder")
+
+	if not holder then
+		error("paradoxlibrary: tab '" .. tostring(parent) .. "' has no layoutholder", 2)
+	end
+
+	return holder
+end
+
+-- elements start fully transparent, these get revealed when their tab is selected
+local function revealGui(instance, transparency, info)
+	if instance:IsA("TextLabel") or instance:IsA("TextBox") then
+		TweenService:Create(instance, info, {
+			TextTransparency = transparency
+		}):Play()
+	elseif instance:IsA("ImageLabel") or instance:IsA("ImageButton") then
+		local parent = instance.Parent
+		local toggled = parent and parent:FindFirstChild("toggled")
+
+		if toggled then
+			transparency = toggled.Value and 0 or 1
+		end
+
+		TweenService:Create(instance, info, {
+			ImageTransparency = transparency
+		}):Play()
+	elseif instance:IsA("Frame") then
+		TweenService:Create(instance, info, {
+			BackgroundTransparency = transparency
+		}):Play()
+	end
+end
+
+local function revealElements(holder, visible, info)
+	for _, element in ipairs(holder:GetChildren()) do
+		if element:IsA("Frame") then
+			TweenService:Create(element, info, {
+				BackgroundTransparency = visible and 0.4 or 1
+			}):Play()
+
+			for _, descendant in ipairs(element:GetDescendants()) do
+				revealGui(descendant, visible and 0 or 1, info)
+			end
+		end
+	end
+end
+
+function paradoxlibrary.window()
+	local gui = Instance.new("ScreenGui", game.CoreGui)
+
+	gui.Name = "paradox"
+	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	gui.ResetOnSpawn = false
+
+	local main = Instance.new("Frame", gui)
+
+	main.BorderSizePixel = 0
+	main.BackgroundColor3 = Color3.fromRGB(21, 21, 21)
+	main.AnchorPoint = Vector2.new(0.5, 0.5)
+	main.Size = UDim2.new(0.34634, 0, 0.47613, 0)
+	main.Position = UDim2.new(0.5, 0, 0.77, 0)
+	main.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	main.Name = "main"
+	main.BackgroundTransparency = 0.1
+
+	local mainCorner = Instance.new("UICorner", main)
+
+	mainCorner.CornerRadius = UDim.new(0, 4)
+
+	local chevron = Instance.new("ImageLabel", main)
+
+	chevron.BorderSizePixel = 0
+	chevron.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	chevron.ImageColor3 = Color3.fromRGB(166, 166, 166)
+	chevron.Image = "rbxassetid://10709791523"
+	chevron.Size = UDim2.new(0.0753, 0, 0.06831, 0)
+	chevron.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	chevron.BackgroundTransparency = 1
+	chevron.Rotation = 180
+	chevron.Name = "chevron"
+	chevron.Position = UDim2.new(0.46096, 0, -0.06831, 0)
+
+	local chevronTrigger = Instance.new("TextButton", chevron)
+
+	chevronTrigger.BorderSizePixel = 0
+	chevronTrigger.TextColor3 = Color3.fromRGB(0, 0, 0)
+	chevronTrigger.TextSize = 14
+	chevronTrigger.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	chevronTrigger.Size = UDim2.new(1, 0, 1, 0)
+	chevronTrigger.BackgroundTransparency = 1
+	chevronTrigger.Name = "trigger"
+	chevronTrigger.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	chevronTrigger.Text = ""
+
+	local chevronRatio = Instance.new("UIAspectRatioConstraint", chevron)
+
+	chevronRatio.AspectRatio = 1.0326
+
+	local mainRatio = Instance.new("UIAspectRatioConstraint", main)
+
+	mainRatio.AspectRatio = 0.93668
+
+	local tabholder = Instance.new("Frame", main)
+
+	tabholder.BorderSizePixel = 0
+	tabholder.BackgroundColor3 = Color3.fromRGB(11, 11, 11)
+	tabholder.Size = UDim2.new(0.94366, 0, 0.17414, 0)
+	tabholder.Position = UDim2.new(0.02817, 0, 0.79947, 0)
+	tabholder.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	tabholder.Name = "tabholder"
+	tabholder.BackgroundTransparency = 0.3
+
+	local tabholderCorner = Instance.new("UICorner", tabholder)
+
+	tabholderCorner.CornerRadius = UDim.new(0, 4)
+
+	local tabholderLayout = Instance.new("Frame", tabholder)
+
+	tabholderLayout.BorderSizePixel = 0
+	tabholderLayout.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	tabholderLayout.Size = UDim2.new(0.94328, 0, 0.71212, 0)
+	tabholderLayout.Position = UDim2.new(0.03881, 0, 0.15308, 0)
+	tabholderLayout.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	tabholderLayout.Name = "layoutholder"
+	tabholderLayout.BackgroundTransparency = 1
+
+	local tabGrid = Instance.new("UIGridLayout", tabholderLayout)
+
+	tabGrid.CellSize = UDim2.new(0.108, 0, 0.745, 0)
+	tabGrid.VerticalAlignment = Enum.VerticalAlignment.Center
+	tabGrid.SortOrder = Enum.SortOrder.LayoutOrder
+
+	local tabholderLayoutRatio = Instance.new("UIAspectRatioConstraint", tabholderLayout)
+
+	tabholderLayoutRatio.AspectRatio = 6.7234
+
+	local tabholderRatio = Instance.new("UIAspectRatioConstraint", tabholder)
+
+	tabholderRatio.AspectRatio = 5.07576
+
+	local tabnameholder = Instance.new("Frame", main)
+
+	tabnameholder.BorderSizePixel = 0
+	tabnameholder.BackgroundColor3 = Color3.fromRGB(11, 11, 11)
+	tabnameholder.Size = UDim2.new(0.94366, 0, 0.10818, 0)
+	tabnameholder.Position = UDim2.new(0.02817, 0, 0.02639, 0)
+	tabnameholder.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	tabnameholder.Name = "tabnameholder"
+	tabnameholder.BackgroundTransparency = 0.3
+
+	local tabnameholderCorner = Instance.new("UICorner", tabnameholder)
+
+	tabnameholderCorner.CornerRadius = UDim.new(0, 4)
+
+	local tabname = Instance.new("TextLabel", tabnameholder)
+
+	tabname.TextWrapped = true
+	tabname.BorderSizePixel = 0
+	tabname.TextSize = 17
+	tabname.TextScaled = true
+	tabname.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	tabname.TextColor3 = Color3.fromRGB(166, 166, 166)
+	tabname.BackgroundTransparency = 1
+	tabname.Size = UDim2.new(1, 0, 0.5122, 0)
+	tabname.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	tabname.Text = ""
+	tabname.Name = "tabname"
+	tabname.Position = UDim2.new(0, 0, 0.2439, 0)
+
+	local tabnameSize = Instance.new("UITextSizeConstraint", tabname)
+
+	tabnameSize.MaxTextSize = 17
+
+	local tabs = Instance.new("Folder", main)
+
+	tabs.Name = "tabs"
+
+	local CLOSED = UDim2.new(0.5, 0, 0.77, 0)
+	local OPEN = UDim2.new(0.5, 0, 1.244, 0)
+	local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
+
+	chevron.MouseEnter:Connect(function()
+		TweenService:Create(chevron, tweenInfo, {
+			ImageColor3 = Color3.fromRGB(255, 255, 255)
+		}):Play()
+	end)
+
+	chevron.MouseLeave:Connect(function()
+		TweenService:Create(chevron, tweenInfo, {
+			ImageColor3 = Color3.fromRGB(200, 200, 200)
+		}):Play()
+	end)
+
+	chevronTrigger.MouseButton1Down:Connect(function()
+		local opening = main.Position == CLOSED
+
+		TweenService:Create(main, tweenInfo, {
+			Position = opening and OPEN or CLOSED
+		}):Play()
+
+		TweenService:Create(chevron, tweenInfo, {
+			Rotation = opening and 0 or 180
+		}):Play()
+	end)
+
+	return {}
+end
+
+function paradoxlibrary.tab(p)
+	local spec = {
+		name = p.name,
+		image = p.image
+	}
+
+	local root = game.CoreGui.paradox.main
+
+	local button = Instance.new("Frame", root.tabholder.layoutholder)
+
+	button.BorderSizePixel = 0
+	button.BackgroundColor3 = Color3.fromRGB(31, 31, 31)
+	button.Size = UDim2.new(0, 100, 0, 100)
+	button.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	button.Name = spec.name
+	button.BackgroundTransparency = 0.6
+	button.LayoutOrder = #root.tabholder.layoutholder:GetChildren() + 1
+
+	local buttonCorner = Instance.new("UICorner", button)
+
+	buttonCorner.CornerRadius = UDim.new(0, 4)
+
+	local image = Instance.new("ImageLabel", button)
+
+	image.BorderSizePixel = 0
+	image.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	image.ImageColor3 = Color3.fromRGB(91, 91, 91)
+	image.AnchorPoint = Vector2.new(0.5, 0.5)
+	image.Image = spec.image
+	image.Size = UDim2.new(0.67393, 0, 0.65686, 0)
+	image.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	image.BackgroundTransparency = 1
+	image.Name = "image"
+	image.Position = UDim2.new(0.5, 0, 0.5, 0)
+
+	Instance.new("UIAspectRatioConstraint", image)
+
+	local trigger = Instance.new("TextButton", button)
+
+	trigger.BorderSizePixel = 0
+	trigger.TextColor3 = Color3.fromRGB(0, 0, 0)
+	trigger.TextSize = 14
+	trigger.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	trigger.Size = UDim2.new(1, 0, 1, 0)
+	trigger.BackgroundTransparency = 1
+	trigger.Name = "trigger"
+	trigger.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	trigger.Text = ""
+
+	local page = Instance.new("ScrollingFrame", root.tabs)
+
+	page.Active = true
+	page.Interactable = false
+	page.BorderSizePixel = 0
+	page.CanvasSize = UDim2.new(0, 0, 8, 0)
+	page.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	page.Name = spec.name
+	page.Size = UDim2.new(0.94366, 0, 0.63325, 0)
+	page.ScrollBarImageColor3 = Color3.fromRGB(91, 91, 91)
+	page.Position = UDim2.new(0.02817, 0, 0.1504, 0)
+	page.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	page.ScrollBarThickness = 2
+	page.BackgroundTransparency = 1
+
+	local layoutholder = Instance.new("Frame", page)
+
+	layoutholder.BorderSizePixel = 0
+	layoutholder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	layoutholder.Size = UDim2.new(0.944, 0, 0.633, 0)
+	layoutholder.Position = UDim2.new(0.03881, 0, 0, 0)
+	layoutholder.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	layoutholder.Name = "layoutholder"
+	layoutholder.BackgroundTransparency = 1
+
+	local list = Instance.new("UIListLayout", layoutholder)
+
+	list.Padding = UDim.new(0, 5)
+	list.SortOrder = Enum.SortOrder.LayoutOrder
+
+	Instance.new("UIAspectRatioConstraint", layoutholder).AspectRatio = 0.16477
+	Instance.new("UIAspectRatioConstraint", page).AspectRatio = 1.39583
+
+	local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
+
+	trigger.MouseButton1Down:Connect(function()
+		for _, child in ipairs(root.tabholder.layoutholder:GetChildren()) do
+			if child:IsA("Frame") then
+				local active = child.Name == spec.name
+
+				TweenService:Create(child, tweenInfo, {
+					BackgroundTransparency = active and 0.1 or 0.6
+				}):Play()
+
+				local childImage = child:FindFirstChild("image")
+
+				if childImage then
+					TweenService:Create(childImage, tweenInfo, {
+						ImageColor3 = active and Color3.fromRGB(165, 165, 165) or Color3.fromRGB(90, 90, 90)
+					}):Play()
+				end
+
+				local childPage = root.tabs:FindFirstChild(child.Name)
+
+				if childPage and childPage:IsA("ScrollingFrame") then
+					childPage.Interactable = active
+					childPage.ScrollBarThickness = active and 2 or 0
+
+					local holder = childPage:FindFirstChild("layoutholder")
+
+					if holder then
+						revealElements(holder, active, tweenInfo)
+					end
+				end
+			end
+		end
+
+		if root.tabnameholder.tabname.Text ~= spec.name then
+			root.tabnameholder.tabname.TextTransparency = 1
+			root.tabnameholder.tabname.Text = spec.name
+
+			TweenService:Create(root.tabnameholder.tabname, tweenInfo, {
+				TextTransparency = 0
+			}):Play()
+		end
+	end)
+
+	return spec
+end
+
+local function bindHover(frame)
+	local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
+
+	frame.MouseEnter:Connect(function()
+		TweenService:Create(frame, tweenInfo, {
+			BackgroundTransparency = 0
+		}):Play()
+	end)
+
+	frame.MouseLeave:Connect(function()
+		TweenService:Create(frame, tweenInfo, {
+			BackgroundTransparency = 0.4
+		}):Play()
+	end)
+end
+
+local function invisibleButton(parent)
+	local trigger = Instance.new("TextButton", parent)
+
+	trigger.BorderSizePixel = 0
+	trigger.TextColor3 = Color3.fromRGB(0, 0, 0)
+	trigger.TextSize = 14
+	trigger.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	trigger.Size = UDim2.new(1, 0, 1, 0)
+	trigger.BackgroundTransparency = 1
+	trigger.Name = "trigger"
+	trigger.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	trigger.Text = ""
+
+	return trigger
+end
+
+local function elementShell(parent, name)
+	local frame = Instance.new("Frame", parent)
+
+	frame.BorderSizePixel = 0
+	frame.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+	frame.Size = UDim2.new(0.97394, 0, 0.02746, 0)
+	frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	frame.Name = name
+	frame.BackgroundTransparency = 1
+	frame.LayoutOrder = #parent:GetChildren() + 1
+
+	Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 5)
+	Instance.new("UIAspectRatioConstraint", frame).AspectRatio = 5.84364
+
+	local title = Instance.new("TextLabel", frame)
+
+	title.TextWrapped = true
+	title.BorderSizePixel = 0
+	title.TextSize = 14
+	title.TextXAlignment = Enum.TextXAlignment.Left
+	title.TextTransparency = 1
+	title.TextYAlignment = Enum.TextYAlignment.Top
+	title.TextScaled = true
+	title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	title.TextColor3 = Color3.fromRGB(166, 166, 166)
+	title.BackgroundTransparency = 1
+	title.Size = UDim2.new(0.977, 0, 0.277, 0)
+	title.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	title.Text = name
+	title.Name = "title"
+	title.Position = UDim2.new(0.023, 0, 0.183, 0)
+
+	Instance.new("UITextSizeConstraint", title).MaxTextSize = 16
+
+	return frame, title
+end
+
+local function elementDescription(frame, text)
+	local description = Instance.new("TextLabel", frame)
+
+	description.TextWrapped = true
+	description.BorderSizePixel = 0
+	description.TextSize = 13
+	description.TextXAlignment = Enum.TextXAlignment.Left
+	description.TextTransparency = 1
+	description.TextScaled = true
+	description.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	description.TextColor3 = Color3.fromRGB(96, 96, 96)
+	description.BackgroundTransparency = 1
+	description.Size = UDim2.new(0.977, 0, 0.277, 0)
+	description.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	description.Text = text or ""
+	description.Name = "description"
+	description.Position = UDim2.new(0.023, 0, 0.59, 0)
+
+	Instance.new("UITextSizeConstraint", description).MaxTextSize = 16
+end
+
+function paradoxlibrary.button(p)
+	local spec = {
+		name = p.name,
+		description = p.description,
+		parent = p.parent,
+		callback = p.callback
+	}
+
+	local frame, title = elementShell(layoutholderOf(spec.parent), spec.name)
+
+	elementDescription(frame, spec.description)
+
+	local image = Instance.new("ImageLabel", frame)
+
+	image.BorderSizePixel = 0
+	image.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	image.ImageTransparency = 1
+	image.ImageColor3 = Color3.fromRGB(166, 166, 166)
+	image.Image = "rbxassetid://10734898194"
+	image.Size = UDim2.new(0.0974, 0, 0.56919, 0)
+	image.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	image.BackgroundTransparency = 1
+	image.Name = "image"
+	image.Position = UDim2.new(0.87013, 0, 0.2087, 0)
+
+	Instance.new("UIAspectRatioConstraint", image)
+
+	local trigger = invisibleButton(frame)
+	local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
+
+	bindHover(frame)
+
+	trigger.MouseButton1Down:Connect(function()
+		TweenService:Create(frame, tweenInfo, {
+			BackgroundTransparency = 0
+		}):Play()
+
+		TweenService:Create(title, tweenInfo, {
+			TextColor3 = Color3.fromRGB(255, 255, 255)
+		}):Play()
+
+		TweenService:Create(image, tweenInfo, {
+			ImageColor3 = Color3.fromRGB(255, 255, 255)
+		}):Play()
+
+		task.wait(0.1)
+
+		TweenService:Create(frame, tweenInfo, {
+			BackgroundTransparency = 0.4
+		}):Play()
+
+		TweenService:Create(title, tweenInfo, {
+			TextColor3 = Color3.fromRGB(165, 165, 165)
+		}):Play()
+
+		TweenService:Create(image, tweenInfo, {
+			ImageColor3 = Color3.fromRGB(165, 165, 165)
+		}):Play()
+
+		if spec.callback then
+			spec.callback()
+		end
+	end)
+
+	return spec
+end
+
+function paradoxlibrary.toggle(p)
+	local spec = {
+		name = p.name,
+		description = p.description,
+		parent = p.parent,
+		callback = p.callback
+	}
+
+	local frame = elementShell(layoutholderOf(spec.parent), spec.name)
+
+	elementDescription(frame, spec.description)
+
+	local toggle = Instance.new("Frame", frame)
+
+	toggle.BorderSizePixel = 0
+	toggle.BackgroundColor3 = Color3.fromRGB(11, 11, 11)
+	toggle.Size = UDim2.new(0.097, 0, 0.569, 0)
+	toggle.Position = UDim2.new(0.87, 0, 0.209, 0)
+	toggle.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	toggle.Name = "toggle"
+	toggle.BackgroundTransparency = 1
+
+	local image = Instance.new("ImageLabel", toggle)
+
+	image.BorderSizePixel = 0
+	image.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	image.ImageTransparency = 1
+	image.ImageColor3 = Color3.fromRGB(166, 166, 166)
+	image.AnchorPoint = Vector2.new(0.5, 0.5)
+	image.Image = "rbxassetid://10709790644"
+	image.Size = UDim2.new(0.83679, 0, 0.8336, 0)
+	image.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	image.BackgroundTransparency = 1
+	image.Name = "image"
+	image.Position = UDim2.new(0.5, 0, 0.5, 0)
+
+	Instance.new("UIAspectRatioConstraint", image)
+	Instance.new("UICorner", toggle).CornerRadius = UDim.new(0, 5)
+	Instance.new("UIAspectRatioConstraint", toggle).AspectRatio = 0.99619
+
+	local trigger = invisibleButton(toggle)
+	local toggled = Instance.new("BoolValue", toggle)
+
+	toggled.Name = "toggled"
+
+	bindHover(frame)
+
+	local state = false
+	local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
+
+	trigger.MouseButton1Down:Connect(function()
+		state = not state
+		toggled.Value = state
+
+		TweenService:Create(image, tweenInfo, {
+			ImageTransparency = state and 0 or 1
+		}):Play()
+
+		if spec.callback then
+			spec.callback(state)
+		end
+	end)
+
+	return spec
+end
+
+function paradoxlibrary.slider(p)
+	local spec = {
+		name = p.name,
+		starting = p.starting,
+		max = p.max,
+		min = p.min,
+		parent = p.parent,
+		callback = p.callback
+	}
+
+	local frame, title = elementShell(layoutholderOf(spec.parent), spec.name)
+
+	local slider = Instance.new("Frame", frame)
+
+	slider.BorderSizePixel = 0
+	slider.BackgroundColor3 = Color3.fromRGB(11, 11, 11)
+	slider.Size = UDim2.new(0.94453, 0, 0.18973, 0)
+	slider.Position = UDim2.new(0.023, 0, 0.60713, 0)
+	slider.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	slider.Name = "slider"
+	slider.BackgroundTransparency = 1
+
+	Instance.new("UICorner", slider).CornerRadius = UDim.new(1, 0)
+
+	local fill = Instance.new("Frame", slider)
+
+	fill.BorderSizePixel = 0
+	fill.BackgroundColor3 = Color3.fromRGB(66, 66, 66)
+	fill.Size = UDim2.new(0, 0, 0.9, 0)
+	fill.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	fill.Name = "fill"
+	fill.BackgroundTransparency = 1
+
+	Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
+
+	local output = Instance.new("NumberValue", slider)
+
+	output.Name = "output"
+
+	local trigger = invisibleButton(slider)
+
+	local value = Instance.new("TextLabel", slider)
+
+	value.TextWrapped = true
+	value.BorderSizePixel = 0
+	value.TextSize = 14
+	value.TextXAlignment = Enum.TextXAlignment.Right
+	value.TextTransparency = 1
+	value.TextScaled = true
+	value.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	value.TextColor3 = Color3.fromRGB(166, 166, 166)
+	value.BackgroundTransparency = 1
+	value.Size = UDim2.new(0.10256, 0, 1.63545, 0)
+	value.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	value.Text = "0%"
+	value.Name = "value"
+	value.Position = UDim2.new(0.89688, 0, -2.23546, 0)
+
+	Instance.new("UITextSizeConstraint", value).MaxTextSize = 14
+	Instance.new("UIAspectRatioConstraint", slider).AspectRatio = 29.0916
+
+	title.Size = UDim2.new(0.66776, 0, 0.277, 0)
+
+	bindHover(frame)
+
+	local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
+	local dragging = false
+	local inputEnded
+
+	output.Value = spec.min
+	value.Text = tostring(spec.starting) .. "%"
+
+	trigger.MouseButton1Down:Connect(function()
+		if dragging then
+			return
+		end
+
+		dragging = true
+
+		local mouse = game:GetService("Players").LocalPlayer:GetMouse()
+
+		inputEnded = game:GetService("UserInputService").InputEnded:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				dragging = false
+
+				if inputEnded then
+					inputEnded:Disconnect()
+					inputEnded = nil
+				end
+			end
+		end)
+
+		while dragging do
+			local scale = math.clamp(((Vector2.new(mouse.X, mouse.Y) - slider.AbsolutePosition) / slider.AbsoluteSize).X, 0, 1)
+			local amount = spec.min + scale * (spec.max - spec.min)
+
+			if amount ~= output.Value then
+				TweenService:Create(fill, tweenInfo, {
+					Size = UDim2.fromScale(scale, 1)
+				}):Play()
+			end
+
+			output.Value = amount
+			value.Text = tostring(math.round(output.Value * 100)) .. "%"
+
+			if spec.callback then
+				spec.callback(tostring(math.round(output.Value * 100)))
+			end
+
+			task.wait()
+		end
+	end)
+
+	return spec
+end
+
+function paradoxlibrary.textbox(p)
+	local spec = {
+		name = p.name,
+		description = p.description,
+		parent = p.parent,
+		callback = p.callback
+	}
+
+	local frame = elementShell(layoutholderOf(spec.parent), spec.name)
+
+	elementDescription(frame, spec.description)
+
+	local box = Instance.new("TextBox", frame)
+
+	box.Name = "box"
+	box.BorderSizePixel = 0
+	box.TextWrapped = true
+	box.TextTransparency = 1
+	box.TextSize = 14
+	box.TextColor3 = Color3.fromRGB(166, 166, 166)
+	box.TextScaled = true
+	box.BackgroundColor3 = Color3.fromRGB(11, 11, 11)
+	box.RichText = true
+	box.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+	box.Size = UDim2.new(0.24635, 0, 0.569, 0)
+	box.Position = UDim2.new(0.72065, 0, 0.209, 0)
+	box.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	box.Text = ""
+	box.BackgroundTransparency = 1
+	box.ClearTextOnFocus = false
+
+	Instance.new("UICorner", box).CornerRadius = UDim.new(0, 5)
+	Instance.new("UIAspectRatioConstraint", box).AspectRatio = 2.53003
+
+	bindHover(frame)
+
+	box.FocusLost:Connect(function()
+		if spec.callback then
+			spec.callback(box.Text)
+		end
+	end)
+
+	return spec
+end
+
+function paradoxlibrary.label(p)
+	local spec = {
+		name = p.name,
+		message = p.message,
+		parent = p.parent,
+		color = p.color
+	}
+
+	local frame = elementShell(layoutholderOf(spec.parent), spec.name)
+
+	local message = Instance.new("TextLabel", frame)
+
+	message.TextWrapped = true
+	message.BorderSizePixel = 0
+	message.TextSize = 14
+	message.TextTransparency = 1
+	message.TextScaled = true
+	message.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	message.TextColor3 = spec.color or Color3.fromRGB(166, 166, 166)
+	message.BackgroundTransparency = 1
+	message.Size = UDim2.new(1, 0, 0.277, 0)
+	message.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	message.Text = spec.message
+	message.Name = "message"
+	message.Position = UDim2.new(0, 0, 0.35376, 0)
+
+	Instance.new("UITextSizeConstraint", message).MaxTextSize = 16
+
+	bindHover(frame)
+
+	return spec
+end
+
+function paradoxlibrary.corebutton(p)
+	local spec = {
+		name = p.name,
+		callback = p.callback
+	}
+
+	local frame = Instance.new("Frame", game.CoreGui.paradox)
+
+	frame.BorderSizePixel = 0
+	frame.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+	frame.Size = UDim2.new(0.11487, 0, 0.06766, 0)
+	frame.Position = UDim2.new(0.00488, 0, 0.00628, 0)
+	frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	frame.Name = spec.name
+	frame.BackgroundTransparency = 0.2
+
+	Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 5)
+
+	local title = Instance.new("TextLabel", frame)
+
+	title.TextWrapped = true
+	title.BorderSizePixel = 0
+	title.TextSize = 14
+	title.TextScaled = true
+	title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	title.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+	title.TextColor3 = Color3.fromRGB(166, 166, 166)
+	title.BackgroundTransparency = 1
+	title.Size = UDim2.new(1, 0, 0.41931, 0)
+	title.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	title.Text = spec.name
+	title.Name = "title"
+	title.Position = UDim2.new(0, 0, 0, 0)
+
+	Instance.new("UITextSizeConstraint", title).MaxTextSize = 14
+
+	local toggle = Instance.new("Frame", frame)
+
+	toggle.BorderSizePixel = 0
+	toggle.BackgroundColor3 = Color3.fromRGB(11, 11, 11)
+	toggle.Size = UDim2.new(0.21233, 0, 0.46417, 0)
+	toggle.Position = UDim2.new(0.38096, 0, 0.41931, 0)
+	toggle.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	toggle.Name = "toggle"
+
+	local image = Instance.new("ImageLabel", toggle)
+
+	image.BorderSizePixel = 0
+	image.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	image.ImageColor3 = Color3.fromRGB(166, 166, 166)
+	image.AnchorPoint = Vector2.new(0.5, 0.5)
+	image.Image = "rbxassetid://10709790644"
+	image.Size = UDim2.new(0.83679, 0, 0.8336, 0)
+	image.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	image.BackgroundTransparency = 1
+	image.Name = "image"
+	image.Position = UDim2.new(0.5, 0, 0.5, 0)
+
+	Instance.new("UIAspectRatioConstraint", image).AspectRatio = 1.00382
+	Instance.new("UICorner", toggle).CornerRadius = UDim.new(0, 5)
+
+	local trigger = invisibleButton(toggle)
+	local toggled = Instance.new("BoolValue", toggle)
+
+	toggled.Name = "toggled"
+
+	Instance.new("UIAspectRatioConstraint", toggle)
+	Instance.new("UIAspectRatioConstraint", frame).AspectRatio = 2.18606
+
+	local state = false
+	local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
+
+	trigger.MouseButton1Down:Connect(function()
+		state = not state
+		toggled.Value = state
+
+		TweenService:Create(image, tweenInfo, {
+			ImageTransparency = state and 0 or 1
+		}):Play()
+
+		if spec.callback then
+			spec.callback(state)
+		end
+	end)
+
+	return spec
+end
+
+return paradoxlibrary
